@@ -1,0 +1,36 @@
+name: Restful Booker API Tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        working-directory: postman
+        run: npm install
+
+      - name: Create reports folder
+        run: mkdir -p reports
+
+      - name: Run Postman Tests
+        run: npx --prefix postman newman run postman/collection.json -e postman/environment.json -r cli,htmlextra --reporter-htmlextra-export reports/report.html
+      - name: Upload HTML Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: newman-html-report
+          path: reports/report.html
